@@ -1,0 +1,699 @@
+{
+  "version": "tree-0.1",
+  "tree": {
+    "id": "App",
+    "path": "",
+    "children": {
+      "Tree": {
+        "id": "Tree",
+        "path": "Tree",
+        "constructInfo": {
+          "fqn": "constructs.Construct",
+          "version": "10.1.138"
+        }
+      },
+      "RdsSnapshotExportToS3Pipeline": {
+        "id": "RdsSnapshotExportToS3Pipeline",
+        "path": "RdsSnapshotExportToS3Pipeline",
+        "children": {
+          "SnapshotExportBucket": {
+            "id": "SnapshotExportBucket",
+            "path": "RdsSnapshotExportToS3Pipeline/SnapshotExportBucket",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "RdsSnapshotExportToS3Pipeline/SnapshotExportBucket/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::S3::Bucket",
+                  "aws:cdk:cloudformation:props": {
+                    "bucketName": "nxt-landingzone-saeast1-002-dev",
+                    "publicAccessBlockConfiguration": {
+                      "blockPublicAcls": true,
+                      "blockPublicPolicy": true,
+                      "ignorePublicAcls": true,
+                      "restrictPublicBuckets": true
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3.CfnBucket",
+                  "version": "2.46.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_s3.Bucket",
+              "version": "2.46.0"
+            }
+          },
+          "SnapshotExportTaskRole": {
+            "id": "SnapshotExportTaskRole",
+            "path": "RdsSnapshotExportToS3Pipeline/SnapshotExportTaskRole",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "RdsSnapshotExportToS3Pipeline/SnapshotExportTaskRole/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                  "aws:cdk:cloudformation:props": {
+                    "assumeRolePolicyDocument": {
+                      "Statement": [
+                        {
+                          "Action": "sts:AssumeRole",
+                          "Effect": "Allow",
+                          "Principal": {
+                            "Service": "export.rds.amazonaws.com"
+                          }
+                        }
+                      ],
+                      "Version": "2012-10-17"
+                    },
+                    "description": "Role used by RDS to perform snapshot exports to S3",
+                    "policies": [
+                      {
+                        "policyName": "SnapshotExportTaskPolicy",
+                        "policyDocument": {
+                          "Statement": [
+                            {
+                              "Action": [
+                                "s3:PutObject*",
+                                "s3:ListBucket",
+                                "s3:GetObject*",
+                                "s3:DeleteObject*",
+                                "s3:GetBucketLocation"
+                              ],
+                              "Effect": "Allow",
+                              "Resource": [
+                                {
+                                  "Fn::GetAtt": [
+                                    "SnapshotExportBucket40852029",
+                                    "Arn"
+                                  ]
+                                },
+                                {
+                                  "Fn::Join": [
+                                    "",
+                                    [
+                                      {
+                                        "Fn::GetAtt": [
+                                          "SnapshotExportBucket40852029",
+                                          "Arn"
+                                        ]
+                                      },
+                                      "/*"
+                                    ]
+                                  ]
+                                }
+                              ]
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                  "version": "2.46.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_iam.Role",
+              "version": "2.46.0"
+            }
+          },
+          "RdsSnapshotExporterLambdaExecutionRole": {
+            "id": "RdsSnapshotExporterLambdaExecutionRole",
+            "path": "RdsSnapshotExportToS3Pipeline/RdsSnapshotExporterLambdaExecutionRole",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "RdsSnapshotExportToS3Pipeline/RdsSnapshotExporterLambdaExecutionRole/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                  "aws:cdk:cloudformation:props": {
+                    "assumeRolePolicyDocument": {
+                      "Statement": [
+                        {
+                          "Action": "sts:AssumeRole",
+                          "Effect": "Allow",
+                          "Principal": {
+                            "Service": "lambda.amazonaws.com"
+                          }
+                        }
+                      ],
+                      "Version": "2012-10-17"
+                    },
+                    "description": "RdsSnapshotExportToS3 Lambda execution role for the \"test-pg-database-1\" database.",
+                    "managedPolicyArns": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+                          ]
+                        ]
+                      }
+                    ],
+                    "policies": [
+                      {
+                        "policyName": "SnapshotExporterLambdaPolicy",
+                        "policyDocument": {
+                          "Statement": [
+                            {
+                              "Action": [
+                                "rds:StartExportTask",
+                                "rds:DescribeDBSnapshots"
+                              ],
+                              "Effect": "Allow",
+                              "Resource": "*"
+                            },
+                            {
+                              "Action": "iam:PassRole",
+                              "Effect": "Allow",
+                              "Resource": {
+                                "Fn::GetAtt": [
+                                  "SnapshotExportTaskRole413D5889",
+                                  "Arn"
+                                ]
+                              }
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                  "version": "2.46.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_iam.Role",
+              "version": "2.46.0"
+            }
+          },
+          "SnapshotExportsGlueCrawlerRole": {
+            "id": "SnapshotExportsGlueCrawlerRole",
+            "path": "RdsSnapshotExportToS3Pipeline/SnapshotExportsGlueCrawlerRole",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "RdsSnapshotExportToS3Pipeline/SnapshotExportsGlueCrawlerRole/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                  "aws:cdk:cloudformation:props": {
+                    "assumeRolePolicyDocument": {
+                      "Statement": [
+                        {
+                          "Action": "sts:AssumeRole",
+                          "Effect": "Allow",
+                          "Principal": {
+                            "Service": "glue.amazonaws.com"
+                          }
+                        }
+                      ],
+                      "Version": "2012-10-17"
+                    },
+                    "description": "Role used by RDS to perform snapshot exports to S3",
+                    "managedPolicyArns": [
+                      {
+                        "Fn::Join": [
+                          "",
+                          [
+                            "arn:",
+                            {
+                              "Ref": "AWS::Partition"
+                            },
+                            ":iam::aws:policy/service-role/AWSGlueServiceRole"
+                          ]
+                        ]
+                      }
+                    ],
+                    "policies": [
+                      {
+                        "policyName": "SnapshotExportsGlueCrawlerPolicy",
+                        "policyDocument": {
+                          "Statement": [
+                            {
+                              "Action": [
+                                "s3:GetObject",
+                                "s3:PutObject"
+                              ],
+                              "Effect": "Allow",
+                              "Resource": {
+                                "Fn::Join": [
+                                  "",
+                                  [
+                                    {
+                                      "Fn::GetAtt": [
+                                        "SnapshotExportBucket40852029",
+                                        "Arn"
+                                      ]
+                                    },
+                                    "/*"
+                                  ]
+                                ]
+                              }
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    ]
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_iam.CfnRole",
+                  "version": "2.46.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_iam.Role",
+              "version": "2.46.0"
+            }
+          },
+          "SnapshotExportEncryptionKey": {
+            "id": "SnapshotExportEncryptionKey",
+            "path": "RdsSnapshotExportToS3Pipeline/SnapshotExportEncryptionKey",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "RdsSnapshotExportToS3Pipeline/SnapshotExportEncryptionKey/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::KMS::Key",
+                  "aws:cdk:cloudformation:props": {
+                    "keyPolicy": {
+                      "Statement": [
+                        {
+                          "Action": "kms:*",
+                          "Effect": "Allow",
+                          "Principal": {
+                            "AWS": {
+                              "Fn::Join": [
+                                "",
+                                [
+                                  "arn:",
+                                  {
+                                    "Ref": "AWS::Partition"
+                                  },
+                                  ":iam::",
+                                  {
+                                    "Ref": "AWS::AccountId"
+                                  },
+                                  ":root"
+                                ]
+                              ]
+                            }
+                          },
+                          "Resource": "*"
+                        },
+                        {
+                          "Action": [
+                            "kms:Encrypt",
+                            "kms:Decrypt",
+                            "kms:ReEncrypt*",
+                            "kms:GenerateDataKey*",
+                            "kms:DescribeKey"
+                          ],
+                          "Effect": "Allow",
+                          "Principal": {
+                            "AWS": [
+                              {
+                                "Fn::GetAtt": [
+                                  "RdsSnapshotExporterLambdaExecutionRoleED363B0C",
+                                  "Arn"
+                                ]
+                              },
+                              {
+                                "Fn::GetAtt": [
+                                  "SnapshotExportsGlueCrawlerRole650653E6",
+                                  "Arn"
+                                ]
+                              }
+                            ]
+                          },
+                          "Resource": "*"
+                        },
+                        {
+                          "Action": [
+                            "kms:CreateGrant",
+                            "kms:ListGrants",
+                            "kms:RevokeGrant"
+                          ],
+                          "Condition": {
+                            "Bool": {
+                              "kms:GrantIsForAWSResource": true
+                            }
+                          },
+                          "Effect": "Allow",
+                          "Principal": {
+                            "AWS": {
+                              "Fn::GetAtt": [
+                                "RdsSnapshotExporterLambdaExecutionRoleED363B0C",
+                                "Arn"
+                              ]
+                            }
+                          },
+                          "Resource": "*"
+                        }
+                      ],
+                      "Version": "2012-10-17"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_kms.CfnKey",
+                  "version": "2.46.0"
+                }
+              },
+              "Alias": {
+                "id": "Alias",
+                "path": "RdsSnapshotExportToS3Pipeline/SnapshotExportEncryptionKey/Alias",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "RdsSnapshotExportToS3Pipeline/SnapshotExportEncryptionKey/Alias/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::KMS::Alias",
+                      "aws:cdk:cloudformation:props": {
+                        "aliasName": "alias/test-pg-database-1-snapshot-exports",
+                        "targetKeyId": {
+                          "Fn::GetAtt": [
+                            "SnapshotExportEncryptionKey64904F1F",
+                            "Arn"
+                          ]
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_kms.CfnAlias",
+                      "version": "2.46.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_kms.Alias",
+                  "version": "2.46.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_kms.Key",
+              "version": "2.46.0"
+            }
+          },
+          "SnapshotEventTopic": {
+            "id": "SnapshotEventTopic",
+            "path": "RdsSnapshotExportToS3Pipeline/SnapshotEventTopic",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "RdsSnapshotExportToS3Pipeline/SnapshotEventTopic/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::SNS::Topic",
+                  "aws:cdk:cloudformation:props": {
+                    "displayName": "rds-snapshot-creation"
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_sns.CfnTopic",
+                  "version": "2.46.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_sns.Topic",
+              "version": "2.46.0"
+            }
+          },
+          "RdsSnapshotEventNotification": {
+            "id": "RdsSnapshotEventNotification",
+            "path": "RdsSnapshotExportToS3Pipeline/RdsSnapshotEventNotification",
+            "attributes": {
+              "aws:cdk:cloudformation:type": "AWS::RDS::EventSubscription",
+              "aws:cdk:cloudformation:props": {
+                "snsTopicArn": {
+                  "Ref": "SnapshotEventTopic2CA0E7C4"
+                },
+                "enabled": true,
+                "eventCategories": [
+                  "creation"
+                ],
+                "sourceType": "db-snapshot"
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_rds.CfnEventSubscription",
+              "version": "2.46.0"
+            }
+          },
+          "RdsBackupCopyEventNotification": {
+            "id": "RdsBackupCopyEventNotification",
+            "path": "RdsSnapshotExportToS3Pipeline/RdsBackupCopyEventNotification",
+            "attributes": {
+              "aws:cdk:cloudformation:type": "AWS::RDS::EventSubscription",
+              "aws:cdk:cloudformation:props": {
+                "snsTopicArn": {
+                  "Ref": "SnapshotEventTopic2CA0E7C4"
+                },
+                "enabled": true,
+                "eventCategories": [
+                  "notification"
+                ],
+                "sourceType": "db-snapshot"
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_rds.CfnEventSubscription",
+              "version": "2.46.0"
+            }
+          },
+          "LambdaFunction": {
+            "id": "LambdaFunction",
+            "path": "RdsSnapshotExportToS3Pipeline/LambdaFunction",
+            "children": {
+              "Code": {
+                "id": "Code",
+                "path": "RdsSnapshotExportToS3Pipeline/LambdaFunction/Code",
+                "children": {
+                  "Stage": {
+                    "id": "Stage",
+                    "path": "RdsSnapshotExportToS3Pipeline/LambdaFunction/Code/Stage",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.AssetStaging",
+                      "version": "2.46.0"
+                    }
+                  },
+                  "AssetBucket": {
+                    "id": "AssetBucket",
+                    "path": "RdsSnapshotExportToS3Pipeline/LambdaFunction/Code/AssetBucket",
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_s3.BucketBase",
+                      "version": "2.46.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_s3_assets.Asset",
+                  "version": "2.46.0"
+                }
+              },
+              "Resource": {
+                "id": "Resource",
+                "path": "RdsSnapshotExportToS3Pipeline/LambdaFunction/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Lambda::Function",
+                  "aws:cdk:cloudformation:props": {
+                    "code": {
+                      "s3Bucket": {
+                        "Fn::Sub": "cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}"
+                      },
+                      "s3Key": "bec2dad13e4ef5b17758cd6be5e0cd47777b55a318659050831adbb4521240f2.zip"
+                    },
+                    "role": {
+                      "Fn::GetAtt": [
+                        "RdsSnapshotExporterLambdaExecutionRoleED363B0C",
+                        "Arn"
+                      ]
+                    },
+                    "environment": {
+                      "variables": {
+                        "RDS_EVENT_IDS": "RDS-EVENT-0091,RDS-EVENT-0042,RDS-EVENT-0197",
+                        "RDS_SNAPSHOT_TYPES": "AUTOMATED,BACKUP,BACKUP",
+                        "DB_NAME": "test-pg-database-1",
+                        "LOG_LEVEL": "INFO",
+                        "SNAPSHOT_BUCKET_NAME": {
+                          "Ref": "SnapshotExportBucket40852029"
+                        },
+                        "SNAPSHOT_TASK_ROLE": {
+                          "Fn::GetAtt": [
+                            "SnapshotExportTaskRole413D5889",
+                            "Arn"
+                          ]
+                        },
+                        "SNAPSHOT_TASK_KEY": {
+                          "Fn::GetAtt": [
+                            "SnapshotExportEncryptionKey64904F1F",
+                            "Arn"
+                          ]
+                        },
+                        "DB_SNAPSHOT_TYPES": "snapshot,snapshot,snapshot"
+                      }
+                    },
+                    "functionName": "test-pg-database-1-rds-snapshot-exporter",
+                    "handler": "main.handler",
+                    "runtime": "python3.8",
+                    "timeout": 30
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_lambda.CfnFunction",
+                  "version": "2.46.0"
+                }
+              },
+              "AllowInvoke:RdsSnapshotExportToS3PipelineSnapshotEventTopicAF304FAB": {
+                "id": "AllowInvoke:RdsSnapshotExportToS3PipelineSnapshotEventTopicAF304FAB",
+                "path": "RdsSnapshotExportToS3Pipeline/LambdaFunction/AllowInvoke:RdsSnapshotExportToS3PipelineSnapshotEventTopicAF304FAB",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Lambda::Permission",
+                  "aws:cdk:cloudformation:props": {
+                    "action": "lambda:InvokeFunction",
+                    "functionName": {
+                      "Fn::GetAtt": [
+                        "LambdaFunctionBF21E41F",
+                        "Arn"
+                      ]
+                    },
+                    "principal": "sns.amazonaws.com",
+                    "sourceArn": {
+                      "Ref": "SnapshotEventTopic2CA0E7C4"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_lambda.CfnPermission",
+                  "version": "2.46.0"
+                }
+              },
+              "SnapshotEventTopic": {
+                "id": "SnapshotEventTopic",
+                "path": "RdsSnapshotExportToS3Pipeline/LambdaFunction/SnapshotEventTopic",
+                "children": {
+                  "Resource": {
+                    "id": "Resource",
+                    "path": "RdsSnapshotExportToS3Pipeline/LambdaFunction/SnapshotEventTopic/Resource",
+                    "attributes": {
+                      "aws:cdk:cloudformation:type": "AWS::SNS::Subscription",
+                      "aws:cdk:cloudformation:props": {
+                        "protocol": "lambda",
+                        "topicArn": {
+                          "Ref": "SnapshotEventTopic2CA0E7C4"
+                        },
+                        "endpoint": {
+                          "Fn::GetAtt": [
+                            "LambdaFunctionBF21E41F",
+                            "Arn"
+                          ]
+                        }
+                      }
+                    },
+                    "constructInfo": {
+                      "fqn": "aws-cdk-lib.aws_sns.CfnSubscription",
+                      "version": "2.46.0"
+                    }
+                  }
+                },
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.aws_sns.Subscription",
+                  "version": "2.46.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_lambda.Function",
+              "version": "2.46.0"
+            }
+          },
+          "SnapshotExportCrawler": {
+            "id": "SnapshotExportCrawler",
+            "path": "RdsSnapshotExportToS3Pipeline/SnapshotExportCrawler",
+            "attributes": {
+              "aws:cdk:cloudformation:type": "AWS::Glue::Crawler",
+              "aws:cdk:cloudformation:props": {
+                "role": {
+                  "Fn::GetAtt": [
+                    "SnapshotExportsGlueCrawlerRole650653E6",
+                    "Arn"
+                  ]
+                },
+                "targets": {
+                  "s3Targets": [
+                    {
+                      "path": {
+                        "Ref": "SnapshotExportBucket40852029"
+                      }
+                    }
+                  ]
+                },
+                "databaseName": "test_pg_database_1",
+                "name": "test-pg-database-1-rds-snapshot-crawler",
+                "schemaChangePolicy": {
+                  "deleteBehavior": "DELETE_FROM_DATABASE"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "aws-cdk-lib.aws_glue.CfnCrawler",
+              "version": "2.46.0"
+            }
+          },
+          "CDKMetadata": {
+            "id": "CDKMetadata",
+            "path": "RdsSnapshotExportToS3Pipeline/CDKMetadata",
+            "children": {
+              "Default": {
+                "id": "Default",
+                "path": "RdsSnapshotExportToS3Pipeline/CDKMetadata/Default",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CfnResource",
+                  "version": "2.46.0"
+                }
+              },
+              "Condition": {
+                "id": "Condition",
+                "path": "RdsSnapshotExportToS3Pipeline/CDKMetadata/Condition",
+                "constructInfo": {
+                  "fqn": "aws-cdk-lib.CfnCondition",
+                  "version": "2.46.0"
+                }
+              }
+            },
+            "constructInfo": {
+              "fqn": "constructs.Construct",
+              "version": "10.1.138"
+            }
+          }
+        },
+        "constructInfo": {
+          "fqn": "aws-cdk-lib.Stack",
+          "version": "2.46.0"
+        }
+      }
+    },
+    "constructInfo": {
+      "fqn": "aws-cdk-lib.App",
+      "version": "2.46.0"
+    }
+  }
+}

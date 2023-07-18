@@ -1,0 +1,148 @@
+{
+  "version": "21.0.0",
+  "artifacts": {
+    "Tree": {
+      "type": "cdk:tree",
+      "properties": {
+        "file": "tree.json"
+      }
+    },
+    "RdsSnapshotExportToS3Pipeline.assets": {
+      "type": "cdk:asset-manifest",
+      "properties": {
+        "file": "RdsSnapshotExportToS3Pipeline.assets.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+      }
+    },
+    "RdsSnapshotExportToS3Pipeline": {
+      "type": "aws:cloudformation:stack",
+      "environment": "aws://unknown-account/unknown-region",
+      "properties": {
+        "templateFile": "RdsSnapshotExportToS3Pipeline.template.json",
+        "validateOnSynth": false,
+        "assumeRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-deploy-role-${AWS::AccountId}-${AWS::Region}",
+        "cloudFormationExecutionRoleArn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-cfn-exec-role-${AWS::AccountId}-${AWS::Region}",
+        "stackTemplateAssetObjectUrl": "s3://cdk-hnb659fds-assets-${AWS::AccountId}-${AWS::Region}/7199c76191cdffd83159638eebdd7bce9f946e0eaecac8467d0df5395aeaf4db.json",
+        "requiresBootstrapStackVersion": 6,
+        "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version",
+        "additionalDependencies": [
+          "RdsSnapshotExportToS3Pipeline.assets"
+        ],
+        "lookupRole": {
+          "arn": "arn:${AWS::Partition}:iam::${AWS::AccountId}:role/cdk-hnb659fds-lookup-role-${AWS::AccountId}-${AWS::Region}",
+          "requiresBootstrapStackVersion": 8,
+          "bootstrapStackVersionSsmParameter": "/cdk-bootstrap/hnb659fds/version"
+        }
+      },
+      "dependencies": [
+        "RdsSnapshotExportToS3Pipeline.assets"
+      ],
+      "metadata": {
+        "/RdsSnapshotExportToS3Pipeline/SnapshotExportBucket/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SnapshotExportBucket40852029"
+          }
+        ],
+        "/RdsSnapshotExportToS3Pipeline/SnapshotExportTaskRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SnapshotExportTaskRole413D5889"
+          }
+        ],
+        "/RdsSnapshotExportToS3Pipeline/RdsSnapshotExporterLambdaExecutionRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "RdsSnapshotExporterLambdaExecutionRoleED363B0C"
+          }
+        ],
+        "/RdsSnapshotExportToS3Pipeline/SnapshotExportsGlueCrawlerRole/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SnapshotExportsGlueCrawlerRole650653E6"
+          }
+        ],
+        "/RdsSnapshotExportToS3Pipeline/SnapshotExportEncryptionKey/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SnapshotExportEncryptionKey64904F1F"
+          }
+        ],
+        "/RdsSnapshotExportToS3Pipeline/SnapshotExportEncryptionKey/Alias/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SnapshotExportEncryptionKeyAlias1EFD872D"
+          }
+        ],
+        "/RdsSnapshotExportToS3Pipeline/SnapshotEventTopic/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SnapshotEventTopic2CA0E7C4"
+          }
+        ],
+        "/RdsSnapshotExportToS3Pipeline/RdsSnapshotEventNotification": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "RdsSnapshotEventNotification"
+          }
+        ],
+        "/RdsSnapshotExportToS3Pipeline/RdsBackupCopyEventNotification": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "RdsBackupCopyEventNotification"
+          }
+        ],
+        "/RdsSnapshotExportToS3Pipeline/LambdaFunction/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "LambdaFunctionBF21E41F"
+          }
+        ],
+        "/RdsSnapshotExportToS3Pipeline/LambdaFunction/AllowInvoke:RdsSnapshotExportToS3PipelineSnapshotEventTopicAF304FAB": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "LambdaFunctionAllowInvokeRdsSnapshotExportToS3PipelineSnapshotEventTopicAF304FABF0006F90"
+          }
+        ],
+        "/RdsSnapshotExportToS3Pipeline/LambdaFunction/SnapshotEventTopic/Resource": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "LambdaFunctionSnapshotEventTopic26EF11DF"
+          }
+        ],
+        "/RdsSnapshotExportToS3Pipeline/SnapshotExportCrawler": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "SnapshotExportCrawler"
+          }
+        ],
+        "/RdsSnapshotExportToS3Pipeline/CDKMetadata/Default": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadata"
+          }
+        ],
+        "/RdsSnapshotExportToS3Pipeline/CDKMetadata/Condition": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CDKMetadataAvailable"
+          }
+        ],
+        "/RdsSnapshotExportToS3Pipeline/BootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "BootstrapVersion"
+          }
+        ],
+        "/RdsSnapshotExportToS3Pipeline/CheckBootstrapVersion": [
+          {
+            "type": "aws:cdk:logicalId",
+            "data": "CheckBootstrapVersion"
+          }
+        ]
+      },
+      "displayName": "RdsSnapshotExportToS3Pipeline"
+    }
+  }
+}
